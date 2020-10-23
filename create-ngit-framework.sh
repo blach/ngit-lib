@@ -104,7 +104,7 @@ do
 
   echo "Creating $TARGET_FRAMEWORK.framework"
   mkdir -p $TARGET_FRAMEWORK.framework/Headers
-  libtool -no_warning_for_no_symbols $LIBTOOL_FLAGS -arch_only $ARCH -o $TARGET_FRAMEWORK.framework/$FWNAME lib/libcrypto.a lib/libssl.a lib/libssh2.a lib/libcurl.a lib/libgit2.a
+  libtool -no_warning_for_no_symbols $LIBTOOL_FLAGS -arch_only $ARCH -o $TARGET_FRAMEWORK.framework/$FWNAME lib/libcrypto.a lib/libssl.a lib/libssh2.a lib/libgit2.a
   cp -r include/$FWNAME/* $TARGET_FRAMEWORK.framework/Headers/
 
   DIR="$(cd "$(dirname "$0")" && pwd)"
