@@ -1,11 +1,6 @@
 tmp
 .DS_Store
-target/bin/
-target/lib/
-target/src/
-target/libssh2*
-target/openssl*
-target/*.tar.gz
+target/**
 libssh2.xcframework
 libgit2.xcframework
 
