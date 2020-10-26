@@ -9,9 +9,6 @@ set -u
 
 # SCRIPT DEFAULTS
 
-# Default version in case no version is specified
-DEFAULTVERSION="0.28.3"
-
 # Default (=full) set of architectures (libgit2 <= 1.9.0) or targets (libssh2>= 1.1.0) to build
 DEFAULTTARGETS="ios-sim-cross-x86_64 ios-sim-cross-i386 ios64-cross-arm64 ios-cross-armv7s ios-cross-armv7 tvos-sim-cross-x86_64 tvos64-cross-arm64"  # mac-catalyst-x86_64 is a valid target that is not in the DEFAULTTARGETS because it's incompatible with "ios-sim-cross-x86_64"
 
@@ -21,7 +18,6 @@ TVOS_MIN_SDK_VERSION="9.0"
 MACOSX_MIN_SDK_VERSION="10.15"
 
 # Init optional env variables (use available variable or default to empty string)
-CURL_OPTIONS="${CURL_OPTIONS:-}"
 CONFIG_OPTIONS="${CONFIG_OPTIONS:-}"
 
 echo_help()
@@ -37,15 +33,12 @@ echo_help()
   echo "     --disable-bitcode             Disable embedding Bitcode"
   echo " -v, --verbose                     Enable verbose logging"
   echo "     --verbose-on-error            Dump last 500 lines from log file if an error occurs (for Travis builds)"
-  echo "     --version=VERSION             libgit2 version to build (defaults to ${DEFAULTVERSION})"
   echo
   echo "Options for libSSH2 1.9.0 and higher ONLY"
   echo "     --targets=\"TARGET TARGET ...\" Space-separated list of build targets"
   echo "                                     Options: ${DEFAULTTARGETS} mac-catalyst-x86_64"
   echo
   echo "For custom configure options, set variable CONFIG_OPTIONS"
-  echo "For custom cURL options, set variable CURL_OPTIONS"
-  echo "  Example: CURL_OPTIONS=\"--proxy 192.168.1.1:8080\" ./build-libssl.sh"
 }
 
 spinner()
@@ -71,16 +64,14 @@ prepare_target_source_dirs()
   OPENSSLDIR="${CURRENTPATH}/bin/${PLATFORM}${SDKVERSION}-${ARCH}.sdk"
   export TARGETDIR="${CURRENTPATH}/bin/${PLATFORM}${SDKVERSION}-${ARCH}.sdk"
   mkdir -p "${TARGETDIR}"
-  LOG="${TARGETDIR}/build-libgit2-${VERSION}.log"
+  LOG="${TARGETDIR}/build-libgit2.log"
 
-  echo "Building libgit2-${VERSION} for ${PLATFORM} ${SDKVERSION} ${ARCH}..."
+  echo "Building libgit2 for ${PLATFORM} ${SDKVERSION} ${ARCH}..."
   echo "  Logfile: ${LOG}"
 
   # Prepare source dir
-  SOURCEDIR="${CURRENTPATH}/src/${PLATFORM}-${ARCH}"
-  mkdir -p "${SOURCEDIR}"
-  tar zxf "${CURRENTPATH}/${LIBGIT_ARCHIVE_FILE_NAME}" -C "${SOURCEDIR}"
-  cd "${SOURCEDIR}/libgit2-${LIBGIT_ARCHIVE_BASE_NAME}"
+  SOURCEDIR="${CURRENTPATH}/src"
+  cd "${SOURCEDIR}"
 }
 
 # Check for error status
@@ -116,10 +107,12 @@ run_configure()
 
   if [ "${LOG_VERBOSE}" == "verbose" ]; then
     cd $COMPILEDIR && \
-    PKG_CONFIG_PATH="${TARGETDIR}/lib/pkgconfig" /usr/local/bin/cmake --config Release .. ${LOCAL_CONFIG_OPTIONS} | tee "${LOG}"
+    rm -rf * && \
+    PKG_CONFIG_PATH="${TARGETDIR}/lib/pkgconfig" cmake ${SCRIPTDIR}/src ${LOCAL_CONFIG_OPTIONS} | tee "${LOG}"
   else
     ( cd $COMPILEDIR && \
-    PKG_CONFIG_PATH="${TARGETDIR}/lib/pkgconfig" /usr/local/bin/cmake --config Release .. ${LOCAL_CONFIG_OPTIONS} > "${LOG}" 2>&1 ) & spinner
+    rm -rf * && \
+    PKG_CONFIG_PATH="${TARGETDIR}/lib/pkgconfig" cmake ${SCRIPTDIR}/src ${LOCAL_CONFIG_OPTIONS} > "${LOG}" 2>&1 ) & spinner
   fi
 
   # Check for error status
@@ -132,10 +125,10 @@ run_make()
   echo "  Make (using ${BUILD_THREADS} thread(s))..."
 
   if [ "${LOG_VERBOSE}" == "verbose" ]; then
-    /usr/local/bin/cmake --build . --target install | tee -a "${LOG}"
+    cmake --build . --target install | tee -a "${LOG}"
     #/usr/local/bin/cmake --build . --config Release --target install | tee -a "${LOG}"
   else
-    /usr/local/bin/cmake --build . --target install 
+    cmake --build . --target install 
   fi
 
   # Check for error status
@@ -159,10 +152,9 @@ finish_build_loop()
   fi
 
   # Copy libsshconf.h to bin directory and add to array
-  echo $SOURCEDIR
   rm -rf "${TARGETDIR}/include/libgit2"
   mkdir -p "${TARGETDIR}/include/libgit2"
-  cp -RL "${SOURCEDIR}/libgit2-${LIBGIT_ARCHIVE_BASE_NAME}/include/" "${TARGETDIR}/include/libgit2/"
+  cp -RL "${SCRIPTDIR}/src/include/" "${TARGETDIR}/include/libgit2/"
   rm -f "${TARGETDIR}/include/*.h"
 
   # Keep reference to first build target for include file
@@ -170,9 +162,7 @@ finish_build_loop()
     INCLUDE_DIR="${TARGETDIR}/include/libgit2"
   fi
 
-  # Return to ${CURRENTPATH} and remove source dir
   cd "${CURRENTPATH}"
-  rm -r "${SOURCEDIR}"
 }
 
 # Init optional command line vars
@@ -234,25 +224,11 @@ case $i in
   --verbose-on-error)
     LOG_VERBOSE="verbose-on-error"
     ;;
-  --version=*)
-    VERSION="${i#*=}"
-    shift
-    ;;
   *)
     echo "Unknown argument: ${i}"
     ;;
 esac
 done
-
-# Specific version: Verify version number format. Expected: dot notation
-if [[ -n "${VERSION}" && ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Unknown version number format. Examples: 1.0.2, 1.0.2h"
-  exit 1
-
-# Script default
-elif [ -z "${VERSION}" ]; then
-  VERSION="${DEFAULTVERSION}"
-fi
 
 # Set default for TARGETS if not specified
 if [ ! -n "${TARGETS}" ]; then
@@ -323,32 +299,6 @@ if [ -n "${CONFIG_OPTIONS}" ]; then
 fi
 echo "  Build location: ${CURRENTPATH}"
 echo
-
-# Download libgit2 when not present
-LIBGIT_ARCHIVE_BASE_NAME="${VERSION}"
-LIBGIT_ARCHIVE_FILE_NAME="libgit2-${LIBGIT_ARCHIVE_BASE_NAME}.tar.gz"
-if [ ! -e ${LIBGIT_ARCHIVE_FILE_NAME} ]; then
-  echo "Downloading ${LIBGIT_ARCHIVE_FILE_NAME}..."
-  LIBGIT_ARCHIVE_URL="https://codeload.github.com/libgit2/libgit2/tar.gz/v${LIBGIT_ARCHIVE_BASE_NAME}"
-
-  # Check whether file exists here (this is the location of the latest version for each branch)
-  # -s be silent, -f return non-zero exit status on failure, -I get header (do not download)
-  curl ${CURL_OPTIONS} -sfIL "${LIBGIT_ARCHIVE_URL}" > /dev/null
-
-  # Both attempts failed, so report the error
-  if [ $? -ne 0 ]; then
-    echo "An error occurred trying to find libgit2 ${VERSION} on ${LIBGIT_ARCHIVE_URL}"
-    echo "Please verify that the version you are trying to build exists, check cURL's error message and/or your network connection."
-    exit 1
-  fi
-
-  # Archive was found, so proceed with download.
-  # -O Use server-specified filename for download
-  curl ${CURL_OPTIONS} -L "${LIBGIT_ARCHIVE_URL}" -o ${LIBGIT_ARCHIVE_FILE_NAME} 
-
-else
-  echo "Using ${LIBGIT_ARCHIVE_FILE_NAME}"
-fi
 
 # Set reference to custom configuration (libgit2 1.9.0)
 export LIBGIT_LOCAL_CONFIG_DIR="${SCRIPTDIR}/config"

@@ -1,3 +1,9 @@
 [submodule "src/openssl"]
 	path = src/openssl
 	url = https://github.com/x2on/OpenSSL-for-iPhone.git
+[submodule "src/libgit2/src"]
+	path = src/libgit2/src
+	url = https://github.com/palmin/libgit2.git
+[submodule "src/libssh2/src"]
+	path = src/libssh2/src
+	url = https://github.com/palmin/libssh2.git

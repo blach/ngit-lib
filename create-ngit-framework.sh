@@ -106,6 +106,8 @@ do
   mkdir -p $TARGET_FRAMEWORK.framework/Headers
   libtool -no_warning_for_no_symbols $LIBTOOL_FLAGS -arch_only $ARCH -o $TARGET_FRAMEWORK.framework/$FWNAME lib/libcrypto.a lib/libssl.a lib/libssh2.a lib/libgit2.a
   cp -r include/$FWNAME/* $TARGET_FRAMEWORK.framework/Headers/
+  mkdir -p $TARGET
+  libtool -static -o $TARGET/libgit2static.a lib/libgit2.a lib/libcrypto.a lib/libssl.a lib/libssh2.a
 
   DIR="$(cd "$(dirname "$0")" && pwd)"
   cp $DIR/"nGit-for-iOS/nGit-for-iOS-Info.plist" $TARGET_FRAMEWORK.framework/Info.plist

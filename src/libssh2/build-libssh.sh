@@ -9,9 +9,6 @@ set -u
 
 # SCRIPT DEFAULTS
 
-# Default version in case no version is specified
-DEFAULTVERSION="1.9.0"
-
 # Default (=full) set of architectures (libssh2 <= 1.9.0) or targets (libssh2>= 1.1.0) to build
 DEFAULTTARGETS="ios-sim-cross-x86_64 ios-sim-cross-i386 ios64-cross-arm64 ios-cross-armv7s ios-cross-armv7 tvos-sim-cross-x86_64 tvos64-cross-arm64"  # mac-catalyst-x86_64 is a valid target that is not in the DEFAULTTARGETS because it's incompatible with "ios-sim-cross-x86_64"
 
@@ -21,7 +18,6 @@ TVOS_MIN_SDK_VERSION="9.0"
 MACOSX_MIN_SDK_VERSION="10.15"
 
 # Init optional env variables (use available variable or default to empty string)
-CURL_OPTIONS="${CURL_OPTIONS:-}"
 CONFIG_OPTIONS="${CONFIG_OPTIONS:-}"
 
 echo_help()
@@ -37,15 +33,12 @@ echo_help()
   echo "     --disable-bitcode             Disable embedding Bitcode"
   echo " -v, --verbose                     Enable verbose logging"
   echo "     --verbose-on-error            Dump last 500 lines from log file if an error occurs (for Travis builds)"
-  echo "     --version=VERSION             libssh2 version to build (defaults to ${DEFAULTVERSION})"
   echo
   echo "Options for libSSH2 1.9.0 and higher ONLY"
   echo "     --targets=\"TARGET TARGET ...\" Space-separated list of build targets"
   echo "                                     Options: ${DEFAULTTARGETS} mac-catalyst-x86_64"
   echo
   echo "For custom configure options, set variable CONFIG_OPTIONS"
-  echo "For custom cURL options, set variable CURL_OPTIONS"
-  echo "  Example: CURL_OPTIONS=\"--proxy 192.168.1.1:8080\" ./build-libssl.sh"
 }
 
 spinner()
@@ -77,11 +70,10 @@ prepare_target_source_dirs()
   echo "  Logfile: ${LOG}"
 
   # Prepare source dir
-  SOURCEDIR="${CURRENTPATH}/src/${PLATFORM}-${ARCH}"
-  mkdir -p "${SOURCEDIR}"
-  tar zxf "${CURRENTPATH}/${LIBSSH_ARCHIVE_FILE_NAME}" -C "${SOURCEDIR}"
-  cd "${SOURCEDIR}/${LIBSSH_ARCHIVE_BASE_NAME}"
-  chmod u+x ./Configure
+  SOURCEDIR="${SCRIPTDIR}/src"
+  cd "${SOURCEDIR}"
+  git clean -xdf
+  autoreconf -if
 }
 
 # Check for error status
@@ -169,7 +161,7 @@ finish_build_loop()
   echo $SOURCEDIR
   rm -rf "${TARGETDIR}/include/libssh2"
   mkdir -p "${TARGETDIR}/include/libssh2"
-  cp -RL "${SOURCEDIR}/${LIBSSH_ARCHIVE_BASE_NAME}/include/" "${TARGETDIR}/include/libssh2/"
+  cp -RL "${SOURCEDIR}/include/" "${TARGETDIR}/include/libssh2/"
   rm -f "${TARGETDIR}/include/*.h"
 
   # Keep reference to first build target for include file
@@ -179,7 +171,6 @@ finish_build_loop()
 
   # Return to ${CURRENTPATH} and remove source dir
   cd "${CURRENTPATH}"
-  rm -r "${SOURCEDIR}"
 }
 
 # Init optional command line vars
@@ -251,16 +242,6 @@ case $i in
 esac
 done
 
-# Specific version: Verify version number format. Expected: dot notation
-if [[ -n "${VERSION}" && ! "${VERSION}" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-  echo "Unknown version number format. Examples: 1.0.2, 1.0.2h"
-  exit 1
-
-# Script default
-elif [ -z "${VERSION}" ]; then
-  VERSION="${DEFAULTVERSION}"
-fi
-
 # Set default for TARGETS if not specified
 if [ ! -n "${TARGETS}" ]; then
   TARGETS="${DEFAULTTARGETS}"
@@ -330,32 +311,6 @@ if [ -n "${CONFIG_OPTIONS}" ]; then
 fi
 echo "  Build location: ${CURRENTPATH}"
 echo
-
-# Download libssh2 when not present
-LIBSSH_ARCHIVE_BASE_NAME="libssh2-${VERSION}"
-LIBSSH_ARCHIVE_FILE_NAME="${LIBSSH_ARCHIVE_BASE_NAME}.tar.gz"
-if [ ! -e ${LIBSSH_ARCHIVE_FILE_NAME} ]; then
-  echo "Downloading ${LIBSSH_ARCHIVE_FILE_NAME}..."
-  LIBSSH_ARCHIVE_URL="https://www.libssh2.org/download/${LIBSSH_ARCHIVE_FILE_NAME}"
-
-  # Check whether file exists here (this is the location of the latest version for each branch)
-  # -s be silent, -f return non-zero exit status on failure, -I get header (do not download)
-  curl ${CURL_OPTIONS} -sfI "${LIBSSH_ARCHIVE_URL}" > /dev/null
-
-  # Both attempts failed, so report the error
-  if [ $? -ne 0 ]; then
-    echo "An error occurred trying to find libssh2 ${VERSION} on ${LIBSSH2_ARCHIVE_URL}"
-    echo "Please verify that the version you are trying to build exists, check cURL's error message and/or your network connection."
-    exit 1
-  fi
-
-  # Archive was found, so proceed with download.
-  # -O Use server-specified filename for download
-  curl ${CURL_OPTIONS} -O "${LIBSSH_ARCHIVE_URL}"
-
-else
-  echo "Using ${LIBSSH_ARCHIVE_FILE_NAME}"
-fi
 
 # Set reference to custom configuration (libssh2 1.9.0)
 export LIBSSH_LOCAL_CONFIG_DIR="${SCRIPTDIR}/config"
