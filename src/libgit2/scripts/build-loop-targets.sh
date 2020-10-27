@@ -56,11 +56,11 @@ do
   # setcontext() and makecontext() result in App Store rejections) and creation
   # of shared libraruuuies (default since 1.1.0)
   if [[ "${PLATFORM}" == "MacOSX" ]]; then
-    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=x86_64-apple-ios13.0-macabi -miphoneos-version-min=13.0 -fembed-bitcode -DCMAKE_COCOA"
+    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=x86_64-apple-ios13.0-macabi -miphoneos-version-min=13.0 -fembed-bitcode -DCMAKE_COCOA -DGIT_COCOA"
     export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=x86_64-apple-ios13.0-macabi -miphoneos-version-min=13.0 -fembed-bitcode"
     export LOCAL_CONFIG_OPTIONS=""
   else
-    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode -DCMAKE_COCOA"
+    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode -DCMAKE_COCOA -DGIT_COCOA"
     export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode"
     #export LOCAL_CONFIG_OPTIONS="-DCMAKE_OSX_SYSROOT=${SDKROOT}"
     export LOCAL_CONFIG_OPTIONS=""
