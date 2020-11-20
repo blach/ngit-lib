@@ -49,13 +49,13 @@ build_macos: ${FRAMEWORK_MACOS}
 ${FRAMEWORK_MACOS}: ${TARGETDIR} openssl_mac libssh2_mac libgit2_mac
 openssl_mac:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_OPENSSL) --targets="mac-catalyst-x86_64" --ec-nistp-64-gcc-128 --macosx-sdk="10.15" --version=${OPENSSLVER}
+	$(BUILD_OPENSSL) --targets="mac-catalyst-x86_64" --ec-nistp-64-gcc-128 --macosx-sdk="11.0" --version=${OPENSSLVER}
 libssh2_mac:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBSSH) --targets="mac-catalyst-x86_64" --version=$(LIBSSHVER) --macosx-sdk="10.15"
+	$(BUILD_LIBSSH) --targets="mac-catalyst-x86_64" --version=$(LIBSSHVER) --macosx-sdk="11.0"
 libgit2_mac:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBGIT) --targets="mac-catalyst-x86_64" --macosx-sdk="10.15" --verbose && \
+	$(BUILD_LIBGIT) --targets="mac-catalyst-x86_64" --macosx-sdk="11.0" --verbose && \
 	$(CREATE_FRAMEWORK) --targets="macOS-x86_64"
 
 build_sim: ${FRAMEWORK_SIM}
