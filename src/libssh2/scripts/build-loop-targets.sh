@@ -57,8 +57,8 @@ do
   # of shared libraruuuies (default since 1.1.0)
   export LOCAL_CONFIG_OPTIONS="--host=${HOST} --prefix=${TARGETDIR} ${CONFIG_OPTIONS} --disable-debug --disable-dependency-tracking --disable-silent-rules --disable-examples-build --with-libz --with-libssl-prefix=${TARGETDIR} --disable-shared --enable-static --with-crypto=openssl"
   if [[ "${PLATFORM}" == "MacOSX" ]]; then
-    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=x86_64-apple-ios13.0-macabi -miphoneos-version-min=13.0 -fembed-bitcode -L${OPENSSLDIR}/lib"
-    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=x86_64-apple-ios13.0-macabi -miphoneos-version-min=13.0 -fembed-bitcode"
+    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=$ARCH-apple-ios14.0-macabi -miphoneos-version-min=14.0 -fembed-bitcode -L${OPENSSLDIR}/lib"
+    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=$ARCH-apple-ios14.0-macabi -miphoneos-version-min=14.0 -fembed-bitcode"
   else
     export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode -L${OPENSSLDIR}/lib -fembed-bitcode"
     export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode"
