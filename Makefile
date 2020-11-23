@@ -19,10 +19,12 @@ CREATE_FRAMEWORK := $(realpath $(CUR_DIR)/create-ngit-framework.sh)
 
 STATIC_IOS := $(TARGETDIR)/iOS-arm64/libgit2static.a
 STATIC_MACOS := $(TARGETDIR)/macOS-x86_64/libgit2static.a
+STATIC_MACOS_ARM64 := $(TARGETDIR)/macOS-arm64/libgit2static.a
 STATIC_SIM := $(TARGETDIR)/simulator-x86_64/libgit2static.a
 
 FRAMEWORK_IOS := $(TARGETDIR)/frameworks/iOS-arm64/libgit2.framework
 FRAMEWORK_MACOS := $(TARGETDIR)/frameworks/macOS-x86_64/libgit2.framework
+FRAMEWORK_MACOS_ARM64 := $(TARGETDIR)/frameworks/macOS-arm64/libgit2.framework
 FRAMEWORK_SIM := $(TARGETDIR)/frameworks/simulator-x86_64/libgit2.framework
 
 OUTPUT_DIR := framework
@@ -58,6 +60,19 @@ libgit2_mac:
 	$(BUILD_LIBGIT) --targets="mac-catalyst-x86_64" --macosx-sdk="11.0" --verbose && \
 	$(CREATE_FRAMEWORK) --targets="macOS-x86_64"
 
+build_macos_arm64: ${FRAMEWORK_MACOS_ARM64}
+${FRAMEWORK_MACOS_ARM64}: ${TARGETDIR} openssl_mac_arm64 libssh2_mac_arm64 libgit2_mac_arm64
+openssl_mac_arm64:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_OPENSSL) --targets="mac-catalyst-arm64" --ec-nistp-64-gcc-128 --macosx-sdk="11.0" --version=${OPENSSLVER}
+libssh2_mac_arm64:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBSSH) --targets="mac-catalyst-arm64" --version=$(LIBSSHVER) --macosx-sdk="11.0"
+libgit2_mac_arm64:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBGIT) --targets="mac-catalyst-arm64" --macosx-sdk="11.0" --verbose && \
+	$(CREATE_FRAMEWORK) --targets="macOS-arm64"
+
 build_sim: ${FRAMEWORK_SIM}
 ${FRAMEWORK_SIM}: ${TARGETDIR} openssl_sim libssh2_sim libgit2_sim
 openssl_sim:
@@ -79,11 +94,12 @@ git2.xcframework:
 		-framework ${FRAMEWORK_SIM} \
 		-output git2.xcframework
 
-framework_static: build_ios build_macos build_sim libgit2.xcframework
+framework_static: build_ios build_macos build_macos_arm64 build_sim libgit2.xcframework
 libgit2.xcframework:
+	lipo -create $(STATIC_MACOS) $(STATIC_MACOS_ARM64) -output libgit2static_catalyst.a
 	xcodebuild -create-xcframework \
 		-library $(STATIC_IOS) \
-		-library ${STATIC_MACOS} \
+		-library libgit2static_catalyst.a \
 		-library ${STATIC_SIM} \
 		-output libgit2.xcframework
 
