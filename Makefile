@@ -8,6 +8,7 @@ DEFAULTTARGETS="ios64-cross mac-catalyst-x86_64"
 DEFAULTFWTARGETS="iOS-arm64 macOS-x86_64 simulator-x86_64"
 OPENSSLVER="1.1.1h"
 LIBSSHVER="1.9.0"
+MACOSVER="11.1"   # You often need to change this as macOS updates
 
 CUR_DIR = $(CURDIR)
 TARGETDIR := target
@@ -51,26 +52,26 @@ build_macos: ${FRAMEWORK_MACOS}
 ${FRAMEWORK_MACOS}: ${TARGETDIR} openssl_mac libssh2_mac libgit2_mac
 openssl_mac:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_OPENSSL) --targets="mac-catalyst-x86_64" --ec-nistp-64-gcc-128 --macosx-sdk="11.0" --version=${OPENSSLVER}
+	$(BUILD_OPENSSL) --targets="mac-catalyst-x86_64" --ec-nistp-64-gcc-128 --macosx-sdk="${MACOSVER}" --version=${OPENSSLVER}
 libssh2_mac:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBSSH) --targets="mac-catalyst-x86_64" --version=$(LIBSSHVER) --macosx-sdk="11.0"
+	$(BUILD_LIBSSH) --targets="mac-catalyst-x86_64" --version=$(LIBSSHVER) --macosx-sdk="${MACOSVER}"
 libgit2_mac:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBGIT) --targets="mac-catalyst-x86_64" --macosx-sdk="11.0" --verbose && \
+	$(BUILD_LIBGIT) --targets="mac-catalyst-x86_64" --macosx-sdk="${MACOSVER}" --verbose && \
 	$(CREATE_FRAMEWORK) --targets="macOS-x86_64"
 
 build_macos_arm64: ${FRAMEWORK_MACOS_ARM64}
 ${FRAMEWORK_MACOS_ARM64}: ${TARGETDIR} openssl_mac_arm64 libssh2_mac_arm64 libgit2_mac_arm64
 openssl_mac_arm64:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_OPENSSL) --targets="mac-catalyst-arm64" --ec-nistp-64-gcc-128 --macosx-sdk="11.0" --version=${OPENSSLVER}
+	$(BUILD_OPENSSL) --targets="mac-catalyst-arm64" --ec-nistp-64-gcc-128 --macosx-sdk="${MACOSVER}" --version=${OPENSSLVER}
 libssh2_mac_arm64:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBSSH) --targets="mac-catalyst-arm64" --version=$(LIBSSHVER) --macosx-sdk="11.0"
+	$(BUILD_LIBSSH) --targets="mac-catalyst-arm64" --version=$(LIBSSHVER) --macosx-sdk="${MACOSVER}"
 libgit2_mac_arm64:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBGIT) --targets="mac-catalyst-arm64" --macosx-sdk="11.0" --verbose && \
+	$(BUILD_LIBGIT) --targets="mac-catalyst-arm64" --macosx-sdk="${MACOSVER}" --verbose && \
 	$(CREATE_FRAMEWORK) --targets="macOS-arm64"
 
 build_sim: ${FRAMEWORK_SIM}
