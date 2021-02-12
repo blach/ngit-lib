@@ -73,7 +73,8 @@ prepare_target_source_dirs()
   SOURCEDIR="${SCRIPTDIR}/src"
   cd "${SOURCEDIR}"
   git clean -xdf
-  autoreconf -if
+  ./buildconf
+  autoreconf -vif
 }
 
 # Check for error status
