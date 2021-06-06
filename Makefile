@@ -5,8 +5,8 @@
 #
 
 DEFAULTTARGETS="ios64-cross mac-catalyst-x86_64"
-DEFAULTFWTARGETS="iOS-arm64 macOS-x86_64 simulator-x86_64"
-OPENSSLVER="1.1.1h"
+DEFAULTFWTARGETS="iOS-arm64 macOS-x86_64 simulator-x86_64 simulator-arm64"
+OPENSSLVER="1.1.1k"
 LIBSSHVER="1.9.0"
 
 CUR_DIR = $(CURDIR)
@@ -21,11 +21,13 @@ STATIC_IOS := $(TARGETDIR)/iOS-arm64/libgit2static.a
 STATIC_MACOS := $(TARGETDIR)/macOS-x86_64/libgit2static.a
 STATIC_MACOS_ARM64 := $(TARGETDIR)/macOS-arm64/libgit2static.a
 STATIC_SIM := $(TARGETDIR)/simulator-x86_64/libgit2static.a
+STATIC_SIM_ARM64 := $(TARGETDIR)/simulator-arm64/libgit2static.a
 
 FRAMEWORK_IOS := $(TARGETDIR)/frameworks/iOS-arm64/libgit2.framework
 FRAMEWORK_MACOS := $(TARGETDIR)/frameworks/macOS-x86_64/libgit2.framework
 FRAMEWORK_MACOS_ARM64 := $(TARGETDIR)/frameworks/macOS-arm64/libgit2.framework
 FRAMEWORK_SIM := $(TARGETDIR)/frameworks/simulator-x86_64/libgit2.framework
+FRAMEWORK_SIM_ARM64 := $(TARGETDIR)/frameworks/simulator-arm64/libgit2.framework
 
 OUTPUT_DIR := framework
 
@@ -38,39 +40,39 @@ build_ios: ${FRAMEWORK_IOS}
 ${FRAMEWORK_IOS}: ${TARGETDIR} openssl_ios libssh2_ios libgit2_ios
 openssl_ios:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_OPENSSL) --targets="ios64-cross-arm64" --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
+	$(BUILD_OPENSSL) --targets="ios-cross-arm64" --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_ios:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBSSH) --targets="ios64-cross-arm64" --version=$(LIBSSHVER)
+	$(BUILD_LIBSSH) --targets="ios-cross-arm64" --verbose-on-error --version=$(LIBSSHVER)
 libgit2_ios:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBGIT) --targets="ios64-cross-arm64" --verbose && \
+	$(BUILD_LIBGIT) --targets="ios-cross-arm64" --verbose && \
 	$(CREATE_FRAMEWORK) --targets="iOS-arm64"
 
 build_macos: ${FRAMEWORK_MACOS}
 ${FRAMEWORK_MACOS}: ${TARGETDIR} openssl_mac libssh2_mac libgit2_mac
 openssl_mac:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_OPENSSL) --targets="mac-catalyst-x86_64" --ec-nistp-64-gcc-128 --macosx-sdk="11.1" --version=${OPENSSLVER}
+	$(BUILD_OPENSSL) --targets="mac-catalyst-x86_64" --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_mac:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBSSH) --targets="mac-catalyst-x86_64" --version=$(LIBSSHVER) --macosx-sdk="11.1"
+	$(BUILD_LIBSSH) --targets="mac-catalyst-x86_64" --verbose --version=$(LIBSSHVER)
 libgit2_mac:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBGIT) --targets="mac-catalyst-x86_64" --macosx-sdk="11.1" --verbose && \
+	$(BUILD_LIBGIT) --targets="mac-catalyst-x86_64" --verbose && \
 	$(CREATE_FRAMEWORK) --targets="macOS-x86_64"
 
 build_macos_arm64: ${FRAMEWORK_MACOS_ARM64}
 ${FRAMEWORK_MACOS_ARM64}: ${TARGETDIR} openssl_mac_arm64 libssh2_mac_arm64 libgit2_mac_arm64
 openssl_mac_arm64:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_OPENSSL) --targets="mac-catalyst-arm64" --ec-nistp-64-gcc-128 --macosx-sdk="11.1" --version=${OPENSSLVER}
+	$(BUILD_OPENSSL) --targets="mac-catalyst-arm64" --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_mac_arm64:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBSSH) --targets="mac-catalyst-arm64" --version=$(LIBSSHVER) --macosx-sdk="11.1"
+	$(BUILD_LIBSSH) --targets="mac-catalyst-arm64" --verbose --version=$(LIBSSHVER)
 libgit2_mac_arm64:
 	cd ./$(TARGETDIR) && \
-	$(BUILD_LIBGIT) --targets="mac-catalyst-arm64" --macosx-sdk="11.1" --verbose && \
+	$(BUILD_LIBGIT) --targets="mac-catalyst-arm64" --verbose && \
 	$(CREATE_FRAMEWORK) --targets="macOS-arm64"
 
 build_sim: ${FRAMEWORK_SIM}
@@ -86,21 +88,26 @@ libgit2_sim:
 	$(BUILD_LIBGIT) --targets="ios-sim-cross-x86_64" --verbose && \
 	$(CREATE_FRAMEWORK) --targets="simulator-x86_64"
 
-framework: build_ios build_macos build_sim git2.xcframework
-git2.xcframework:
-	xcodebuild -create-xcframework \
-		-framework ${FRAMEWORK_IOS} \
-		-framework ${FRAMEWORK_MACOS} \
-		-framework ${FRAMEWORK_SIM} \
-		-output git2.xcframework
+build_sim_arm64: ${FRAMEWORK_SIM_ARM64}
+${FRAMEWORK_SIM_ARM64}: ${TARGETDIR} openssl_sim_arm64 libssh2_sim_arm64 libgit2_sim_arm64
+openssl_sim_arm64:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_OPENSSL) --targets="ios-sim-cross-arm64" --verbose --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
+libssh2_sim_arm64:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBSSH) --targets="ios-sim-cross-arm64" --verbose --version=$(LIBSSHVER)
+libgit2_sim_arm64:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBGIT) --targets="ios-sim-cross-arm64" --verbose && \
+	$(CREATE_FRAMEWORK) --targets="simulator-arm64"
 
-framework_static: build_ios build_macos build_macos_arm64 build_sim libgit2.xcframework
+framework_static: build_ios build_macos build_macos_arm64 build_sim build_sim_arm64 libgit2.xcframework
 libgit2.xcframework:
 	lipo -create $(STATIC_MACOS) $(STATIC_MACOS_ARM64) -output libgit2static_catalyst.a
 	xcodebuild -create-xcframework \
 		-library $(STATIC_IOS) \
 		-library libgit2static_catalyst.a \
-		-library ${STATIC_SIM} \
+		-library ${STATIC_SIM_ARM64} \
 		-output libgit2.xcframework
 
 codesign:
@@ -110,5 +117,5 @@ codesign:
 clean:
 	@echo " Cleaning...";
 	@$(RM) -r $(TARGETDIR)
-
+	@$(RM) libgit2static_*.a
 .PHONY: clean
