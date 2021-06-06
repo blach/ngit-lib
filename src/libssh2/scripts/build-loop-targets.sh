@@ -60,8 +60,11 @@ do
     export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=$ARCH-apple-ios14.0-macabi -miphoneos-version-min=14.0 -fembed-bitcode -L${OPENSSLDIR}/lib"
     export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=$ARCH-apple-ios14.0-macabi -miphoneos-version-min=14.0 -fembed-bitcode"
   else
-    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode -L${OPENSSLDIR}/lib -fembed-bitcode"
-    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode"
+    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=12.0 -fembed-bitcode -L${OPENSSLDIR}/lib -fembed-bitcode"
+    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=12.0 -fembed-bitcode"
+  fi
+  if [[ "${PLATFORM}" == "iPhoneSimulator" ]]; then
+    export CFLAGS="$CFLAGS --target=$ARCH-apple-ios12.0-simulator"
   fi
   CLANG="/usr/bin/xcrun clang"
   export CC="$CLANG"
