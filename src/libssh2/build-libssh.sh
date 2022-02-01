@@ -103,16 +103,6 @@ run_configure()
 {
   echo "  Configure..."
   set +e
-  export CLANG=`xcrun --find clang`
-  unset LDFLAGS
-  unset EXTRA_CMAKE_ARGS
-  unset PKG_CONFIG_PATH
-  export CC="$CLANG"
-  export CPP="$CLANG -E" 
-  #export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode"
-  #export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -isysroot $SDKROOT -mios-version-min=13.0"
-  echo $LOCAL_CONFIG_OPTIONS
-
   if [ "${LOG_VERBOSE}" == "verbose" ]; then
     ./Configure ${LOCAL_CONFIG_OPTIONS} | tee "${LOG}"
   else

@@ -8,7 +8,7 @@ do
   # Determine relevant SDK version
   if [[ "${TARGET}" == tvos* ]]; then
     SDKVERSION="${TVOS_SDKVERSION}"
-  elif [[ "${TARGET}" == "mac-catalyst"* ]]; then
+  elif [[ "${TARGET}" == "mac-"* ]]; then
     SDKVERSION="${MACOSX_SDKVERSION}"
   else
     SDKVERSION="${IOS_SDKVERSION}"
@@ -27,8 +27,13 @@ do
     PLATFORM="AppleTVSimulator"
   elif [[ "${TARGET}" == "tvos64-cross-"* ]]; then
     PLATFORM="AppleTVOS"
-  elif [[ "${TARGET}" == "mac-catalyst-"* ]]; then
+  elif [[ "${TARGET}" == "mac-"* ]]; then
     PLATFORM="MacOSX"
+    if [[ "${TARGET}" == "mac-catalyst-"* ]]; then
+      PLATFORM_VARIANT="Catalyst"
+    else
+      PLATFORM_VARIANT="Mac"
+    fi
   else
     PLATFORM="iPhoneOS"
   fi
@@ -55,16 +60,14 @@ do
   # Add build target, --prefix and prevent async (references to getcontext(),
   # setcontext() and makecontext() result in App Store rejections) and creation
   # of shared libraruuuies (default since 1.1.0)
-  if [[ "${PLATFORM}" == "MacOSX" ]]; then
-    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=x86_64-apple-ios13.0-macabi -miphoneos-version-min=13.0 -fembed-bitcode -DCMAKE_COCOA -DGIT_COCOA"
-    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=x86_64-apple-ios13.0-macabi -miphoneos-version-min=13.0 -fembed-bitcode"
-    export LOCAL_CONFIG_OPTIONS=""
+  if [[ ["${PLATFORM}" == "MacOSX"] && ["${PLATFORM_VARIANT}" == "Catalyst"] ]]; then
+    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=$ARCH-apple-ios13.0-macabi -fembed-bitcode -DCMAKE_COCOA -DGIT_COCOA"
+    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT --target=$ARCH-apple-ios13.0-macabi -fembed-bitcode"
   else
-    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode -DCMAKE_COCOA -DGIT_COCOA"
-    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=13.0 -fembed-bitcode"
-    #export LOCAL_CONFIG_OPTIONS="-DCMAKE_OSX_SYSROOT=${SDKROOT}"
-    export LOCAL_CONFIG_OPTIONS=""
+    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -fembed-bitcode -DCMAKE_COCOA -DGIT_COCOA"
+    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -fembed-bitcode"
   fi
+  export LOCAL_CONFIG_OPTIONS=""
   if [[ "${ARCH}" != "x86_64" ]]
   then
     LOCAL_CONFIG_OPTIONS="-DCMAKE_OSX_SYSROOT=${SDKROOT}"
@@ -74,7 +77,7 @@ do
   fi
   export PKG_CONFIG_PATH="{$TARGETDIR}/lib/pkgconfig/"
   #export LOCAL_CONFIG_OPTIONS="-DLIB_INSTALL_DIR:STRING="${TARGETDIR}/lib" -DINCLUDE_INSTALL_DIR:STRING="${TARGETDIR}/include" -DUSE_ICONV:BOOL=OFF -DOPENSSL_ROOT_DIR=${OPENSSLDIR} -DOPENSSL_INCLUDE_DIR=${OPENSSLDIR}/include -DOPENSSL_SSL_LIBRARY=${OPENSSLDIR}/lib/libssl.a -DOPENSSL_CRYPTO_LIBRARY=${OPENSSLDIR}/lib/libcrypto.a -DCMAKE_INSTALL_PREFIX="${TARGETDIR}/" -DCMAKE_C_COMPILER_WORKS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -DUSE_BUNDLED_ZLIB:BOOL=ON -DBUILD_CLAR:BOOL=OFF -DHAVE_FUTIMENS:BOOL=OFF -DUSE_HTTPS=OpenSSL -DLIBSSH2_FOUND=TRUE -DLIBSSH2_INCLUDE_DIRS="${TARGETDIR}/include" -DLIBSSH2_LIBRARY_DIRS="${TARGETDIR}/lib" -DHAVE_LIBSSH2_MEMORY_CREDENTIALS:BOOL=ON -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON -DTHREADSAFE:BOOL=ON -DCMAKE_OSX_ARCHITECTURES:STRING="${ARCH}" $LOCAL_CONFIG_OPTIONS"
-  export LOCAL_CONFIG_OPTIONS="-DOPENSSL_ROOT_DIR=${OPENSSLDIR} -DOPENSSL_INCLUDE_DIR=${OPENSSLDIR}/include -DOPENSSL_SSL_LIBRARY=${OPENSSLDIR}/lib/libssl.a -DOPENSSL_CRYPTO_LIBRARY=${OPENSSLDIR}/lib/libcrypto.a -DCMAKE_INSTALL_PREFIX="${TARGETDIR}/" -DCMAKE_C_COMPILER_WORKS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -DBUILD_CLAR:BOOL=OFF -DHAVE_FUTIMENS:BOOL=OFF -DUSE_HTTPS=ON -DUSE_GSSAPI=OFF -DICONV_INCLUDE_DIR="${TARGETDIR}/include" -DICONV_LIBRARIES="iconv" -DLIBSSH2_INCLUDE_DIRS="${TARGETDIR}/include" -DUSE_BUNDLED_ZLIB:BOOL=ON -DLIBSSH2_LIBRARY_DIRS="${TARGETDIR}/lib" -DHAVE_LIBSSH2_MEMORY_CREDENTIALS:BOOL=ON -DCMAKE_PREFIX_PATH:PATH=${TARGETDIR} -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON -DTHREADSAFE:BOOL=ON -DREGEX_BACKEND=builtin -DCMAKE_OSX_ARCHITECTURES:STRING=${ARCH} $LOCAL_CONFIG_OPTIONS"
+  export LOCAL_CONFIG_OPTIONS="-DCMAKE_BUILD_TYPE=RelWithDebInfo -DOPENSSL_ROOT_DIR=${OPENSSLDIR} -DOPENSSL_INCLUDE_DIR=${OPENSSLDIR}/include -DOPENSSL_SSL_LIBRARY=${OPENSSLDIR}/lib/libssl.a -DOPENSSL_CRYPTO_LIBRARY=${OPENSSLDIR}/lib/libcrypto.a -DCMAKE_INSTALL_PREFIX="${TARGETDIR}/" -DCMAKE_C_COMPILER_WORKS:BOOL=ON -DBUILD_SHARED_LIBS:BOOL=OFF -DBUILD_CLAR:BOOL=OFF -DHAVE_FUTIMENS:BOOL=OFF -DUSE_HTTPS=ON -DUSE_GSSAPI=OFF -DICONV_INCLUDE_DIR="${TARGETDIR}/include" -DICONV_LIBRARIES="iconv" -DLIBSSH2_INCLUDE_DIRS="${TARGETDIR}/include" -DUSE_BUNDLED_ZLIB:BOOL=ON -DLIBSSH2_LIBRARY_DIRS="${TARGETDIR}/lib" -DHAVE_LIBSSH2_MEMORY_CREDENTIALS:BOOL=ON -DCMAKE_PREFIX_PATH:PATH=${TARGETDIR} -DPKG_CONFIG_USE_CMAKE_PREFIX_PATH:BOOL=ON -DTHREADSAFE:BOOL=ON -DREGEX_BACKEND=builtin -DCMAKE_OSX_ARCHITECTURES:STRING=${ARCH} $LOCAL_CONFIG_OPTIONS"
 
   CLANG="/usr/bin/xcrun clang"
   export CC="$CLANG"
