@@ -7,3 +7,6 @@
 [submodule "src/libssh2/src"]
 	path = src/libssh2/src
 	url = https://github.com/palmin/libssh2.git
+[submodule "src/libcurl/src"]
+	path = src/libcurl/src
+	url = https://github.com/blach/curl.git
