@@ -8,12 +8,14 @@ DEFAULTTARGETS="ios64-cross mac-catalyst-x86_64"
 DEFAULTFWTARGETS="iOS-arm64 macOS-x86_64 simulator-x86_64 simulator-arm64"
 OPENSSLVER="1.1.1m"
 LIBSSHVER="1.10.0"
+LIBCURLVER="7.83.0"
 
 CUR_DIR = $(CURDIR)
 TARGETDIR := target
 
 BUILD_OPENSSL := $(realpath $(CUR_DIR)/src/openssl/build-libssl.sh)
 BUILD_LIBSSH := $(realpath $(CUR_DIR)/src/libssh2/build-libssh.sh)
+BUILD_LIBCURL := $(realpath $(CUR_DIR)/src/libcurl/build-libcurl.sh)
 BUILD_LIBGIT := $(realpath $(CUR_DIR)/src/libgit2/build-libgit.sh)
 
 STATIC_IOS := $(TARGETDIR)/iOS-arm64/libgit2static.a
@@ -32,102 +34,123 @@ ${TARGETDIR}:
 	mkdir -p ${TARGETDIR}
 
 build_ios: ${TARGETDIR} ${STATIC_IOS}
-${STATIC_IOS}: openssl_ios libssh2_ios libgit2_ios
+${STATIC_IOS}: openssl_ios libssh2_ios libcurl_ios libgit2_ios
 openssl_ios: 
 	cd ./$(TARGETDIR) && \
 	$(BUILD_OPENSSL) --targets="ios-cross-arm64" --verbose-on-error --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_ios:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBSSH) --targets="ios-cross-arm64" --verbose-on-error --version=$(LIBSSHVER)
+libcurl_ios:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBCURL) --targets="ios-cross-arm64" --verbose-on-error --version=$(LIBCURLVER)	
 libgit2_ios:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBGIT) --targets="ios-cross-arm64" --verbose
 	mkdir -p $(TARGETDIR)/iOS-arm64
-	libtool -static -o $(STATIC_IOS) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a
+	libtool -static -o $(STATIC_IOS) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a $(TARGETDIR)/lib/libcurl.a
 
 build_macos: ${TARGETDIR} ${STATIC_MACOS}
-${STATIC_MACOS}: openssl_mac libssh2_mac libgit2_mac
+${STATIC_MACOS}: openssl_mac libssh2_mac libcurl_mac libgit2_mac
 openssl_mac:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_OPENSSL) --targets="mac-x86_64" --verbose-on-error --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_mac:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBSSH) --targets="mac-x86_64" --verbose-on-error --version=$(LIBSSHVER)
+libcurl_mac:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBCURL) --targets="mac-x86_64" --verbose-on-error --version=$(LIBCURLVER)
 libgit2_mac:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBGIT) --targets="mac-x86_64" --verbose
 	mkdir -p $(TARGETDIR)/mac-x86_64
-	libtool -static -o $(STATIC_MACOS) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a
+	libtool -static -o $(STATIC_MACOS) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a $(TARGETDIR)/lib/libcurl.a
 
 build_macos_arm64: ${STATIC_MACOS_ARM64}
-${STATIC_MACOS_ARM64}: ${TARGETDIR} openssl_mac_arm64 libssh2_mac_arm64 libgit2_mac_arm64
+${STATIC_MACOS_ARM64}: ${TARGETDIR} openssl_mac_arm64 libssh2_mac_arm64 libcurl_mac_arm64 libgit2_mac_arm64
 openssl_mac_arm64:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_OPENSSL) --targets="mac-arm64" --verbose-on-error --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_mac_arm64:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBSSH) --targets="mac-arm64" --verbose-on-error --version=$(LIBSSHVER)
+libcurl_mac_arm64:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBCURL) --targets="mac-arm64" --verbose-on-error --version=$(LIBCURLVER)
 libgit2_mac_arm64:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBGIT) --targets="mac-arm64" --verbose
 	mkdir -p $(TARGETDIR)/mac-arm64
-	libtool -static -o $(STATIC_MACOS_ARM64) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a
+	libtool -static -o $(STATIC_MACOS_ARM64) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a $(TARGETDIR)/lib/libcurl.a
 
 build_macos_catalyst_arm64: ${STATIC_MACOS_CATALYST_ARM64}
-${STATIC_MACOS_CATALYST_ARM64}: ${TARGETDIR} openssl_mac_catalyst_arm64 libssh2_mac_catalyst_arm64 libgit2_mac_catalyst_arm64
+${STATIC_MACOS_CATALYST_ARM64}: ${TARGETDIR} openssl_mac_catalyst_arm64 libssh2_mac_catalyst_arm64 libcurl_mac_catalyst_arm64 libgit2_mac_catalyst_arm64
 openssl_mac_catalyst_arm64:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_OPENSSL) --targets="mac-catalyst-arm64" --verbose-on-error --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_mac_catalyst_arm64:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBSSH) --targets="mac-catalyst-arm64" --verbose-on-error --version=$(LIBSSHVER)
+libcurl_mac_catalyst_arm64:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBCURL) --targets="mac-catalyst-arm64" --verbose-on-error --version=$(LIBCURLVER)
 libgit2_mac_catalyst_arm64:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBGIT) --targets="mac-catalyst-arm64" --verbose
 	mkdir -p $(TARGETDIR)/mac-catalyst-arm64
-	libtool -static -o $(STATIC_MACOS_CATALYST_ARM64) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a
+	libtool -static -o $(STATIC_MACOS_CATALYST_ARM64) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a $(TARGETDIR)/lib/libcurl.a
 
 build_macos_catalyst: ${STATIC_MACOS_CATALYST}
-${STATIC_MACOS_CATALYST}: ${TARGETDIR} openssl_mac_catalyst libssh2_mac_catalyst libgit2_mac_catalyst
+${STATIC_MACOS_CATALYST}: ${TARGETDIR} openssl_mac_catalyst libssh2_mac_catalyst libcurl_mac_catalyst libgit2_mac_catalyst
 openssl_mac_catalyst:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_OPENSSL) --targets="mac-catalyst-x86_64" --verbose-on-error --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_mac_catalyst:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBSSH) --targets="mac-catalyst-x86_64" --verbose-on-error --version=$(LIBSSHVER)
+libcurl_mac_catalyst:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBCURL) --targets="mac-catalyst-x86_64" --verbose-on-error --version=$(LIBCURLVER)
 libgit2_mac_catalyst:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBGIT) --targets="mac-catalyst-x86_64" --verbose
 	mkdir -p $(TARGETDIR)/mac-catalyst-x86_64
-	libtool -static -o $(STATIC_MACOS_CATALYST) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a
+	libtool -static -o $(STATIC_MACOS_CATALYST) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a $(TARGETDIR)/lib/libcurl.a
 
 build_sim: ${STATIC_SIM}
-${STATIC_SIM}: ${TARGETDIR} openssl_sim libssh2_sim libgit2_sim
+${STATIC_SIM}: ${TARGETDIR} openssl_sim libssh2_sim libcurl_sim libgit2_sim
 openssl_sim:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_OPENSSL) --targets="ios-sim-cross-x86_64" --verbose-on-error --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_sim:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBSSH) --targets="ios-sim-cross-x86_64" --verbose-on-error --version=$(LIBSSHVER)
+libcurl_sim:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBCURL) --targets="ios-sim-cross-x86_64" --verbose-on-error --version=$(LIBCURLVER)
 libgit2_sim:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBGIT) --targets="ios-sim-cross-x86_64" --verbose
 	mkdir -p $(TARGETDIR)/simulator-x86_64
-	libtool -static -o $(STATIC_SIM) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a
+	libtool -static -o $(STATIC_SIM) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a $(TARGETDIR)/lib/libcurl.a
 
 build_sim_arm64: ${STATIC_SIM_ARM64}
-${STATIC_SIM_ARM64}: ${TARGETDIR} openssl_sim_arm64 libssh2_sim_arm64 libgit2_sim_arm64
+${STATIC_SIM_ARM64}: ${TARGETDIR} openssl_sim_arm64 libssh2_sim_arm64 libcurl_sim_arm64 libgit2_sim_arm64
 openssl_sim_arm64:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_OPENSSL) --targets="ios-sim-cross-arm64" --verbose-on-error --ec-nistp-64-gcc-128 --version=${OPENSSLVER}
 libssh2_sim_arm64:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBSSH) --targets="ios-sim-cross-arm64" --verbose-on-error --version=$(LIBSSHVER)
+libcurl_sim_arm64:
+	cd ./$(TARGETDIR) && \
+	$(BUILD_LIBCURL) --targets="ios-sim-cross-arm64" --verbose-on-error --version=$(LIBCURLVER)
 libgit2_sim_arm64:
 	cd ./$(TARGETDIR) && \
 	$(BUILD_LIBGIT) --targets="ios-sim-cross-arm64" --verbose
 	mkdir -p $(TARGETDIR)/simulator-arm64
-	libtool -static -o $(STATIC_SIM_ARM64) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a
+	libtool -static -o $(STATIC_SIM_ARM64) $(TARGETDIR)/lib/libgit2.a $(TARGETDIR)/lib/libcrypto.a $(TARGETDIR)/lib/libssl.a $(TARGETDIR)/lib/libssh2.a $(TARGETDIR)/lib/libcurl.a
 
 framework_static: build_ios build_macos build_macos_arm64 build_macos_catalyst build_macos_catalyst_arm64 build_sim build_sim_arm64 libgit2.xcframework
 libgit2.xcframework:
