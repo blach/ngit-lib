@@ -156,11 +156,12 @@ framework_static: build_ios build_macos build_macos_arm64 build_macos_catalyst b
 libgit2.xcframework:
 	lipo -create $(STATIC_MACOS) $(STATIC_MACOS_ARM64) -output ${TARGETDIR}/libgit2static_macos.a
 	lipo -create $(STATIC_MACOS_CATALYST) $(STATIC_MACOS_CATALYST_ARM64) -output ${TARGETDIR}/libgit2static_catalyst.a
+	lipo -create $(STATIC_SIM) $(STATIC_SIM_ARM64) -output ${TARGETDIR}/libgit2static_simulator.a
 	xcodebuild -create-xcframework \
 		-library $(STATIC_IOS) \
 		-library ${TARGETDIR}/libgit2static_macos.a \
 		-library ${TARGETDIR}/libgit2static_catalyst.a \
-		-library ${STATIC_SIM_ARM64} \
+		-library ${TARGETDIR}/libgit2static_simulator.a \
 		-output libgit2.xcframework
 
 codesign:
