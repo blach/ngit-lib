@@ -69,8 +69,8 @@ do
       export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -fembed-bitcode"
     fi
   else
-    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -fembed-bitcode -DCMAKE_COCOA -DGIT_COCOA"
-    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -fembed-bitcode"
+    export CFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=12.0 -fembed-bitcode -DCMAKE_COCOA -DGIT_COCOA"
+    export CPPFLAGS="-arch $ARCH -pipe -no-cpp-precomp -fPIE -isysroot $SDKROOT -mios-version-min=12.0 -fembed-bitcode"
   fi
   export LOCAL_CONFIG_OPTIONS=""
   if [[ "${ARCH}" != "x86_64" ]]
