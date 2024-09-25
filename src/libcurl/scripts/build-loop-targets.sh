@@ -78,7 +78,7 @@ do
     export CFLAGS="$CFLAGS --target=$ARCH-apple-ios12.0-simulator"
   fi  
   export LDFLAGS="-arch $ARCH -isysroot $SDKROOT -L${OPENSSLDIR}/lib -fembed-bitcode"
-  export LOCAL_CONFIG_OPTIONS="--prefix=${TARGETDIR} --with-ssl=${OPENSSLDIR} --with-libssh2 --enable-ipv6 --host=${HOST} --disable-shared --enable-static --disable-manual -with-random=/dev/urandom"
+  export LOCAL_CONFIG_OPTIONS="--prefix=${TARGETDIR} --with-ssl=${OPENSSLDIR} --with-libssh2 --enable-ipv6 --host=${HOST} --disable-shared --enable-static --disable-manual -with-random=/dev/urandom --without-libpsl"
   export PKG_CONFIG_PATH="{$TARGETDIR}/lib/pkgconfig/"
   export LIPO=""
 
