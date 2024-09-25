@@ -13,7 +13,9 @@ LIBCURLVER="8.5.0"
 CUR_DIR = $(CURDIR)
 TARGETDIR := target
 
-BUILD_OPENSSL := $(realpath $(CUR_DIR)/src/openssl/build-libssl.sh)
+OPENSSL_ENV := CFLAGS="-O2" CXXFLAGS="-O2"
+
+BUILD_OPENSSL := $(OPENSSL_ENV) $(realpath $(CUR_DIR)/src/openssl/build-libssl.sh)
 BUILD_LIBSSH := $(realpath $(CUR_DIR)/src/libssh2/build-libssh.sh)
 BUILD_LIBCURL := $(realpath $(CUR_DIR)/src/libcurl/build-libcurl.sh)
 BUILD_LIBGIT := $(realpath $(CUR_DIR)/src/libgit2/build-libgit.sh)
