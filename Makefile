@@ -15,10 +15,10 @@ TARGETDIR := target
 
 OPENSSL_ENV := CFLAGS="-O2" CXXFLAGS="-O2"
 
-BUILD_OPENSSL := $(OPENSSL_ENV) $(realpath $(CUR_DIR)/src/openssl/build-libssl.sh)
-BUILD_LIBSSH := $(realpath $(CUR_DIR)/src/libssh2/build-libssh.sh)
-BUILD_LIBCURL := $(realpath $(CUR_DIR)/src/libcurl/build-libcurl.sh)
-BUILD_LIBGIT := $(realpath $(CUR_DIR)/src/libgit2/build-libgit.sh)
+BUILD_OPENSSL := $(OPENSSL_ENV) $(realpath $(CUR_DIR)/src/openssl/build-libssl.sh) --disable-bitcode
+BUILD_LIBSSH := $(realpath $(CUR_DIR)/src/libssh2/build-libssh.sh) --disable-bitcode
+BUILD_LIBCURL := $(realpath $(CUR_DIR)/src/libcurl/build-libcurl.sh) --disable-bitcode
+BUILD_LIBGIT := $(realpath $(CUR_DIR)/src/libgit2/build-libgit.sh) --disable-bitcode
 
 STATIC_IOS := $(TARGETDIR)/iOS-arm64/libgit2static.a
 STATIC_MACOS := $(TARGETDIR)/mac-x86_64/libgit2static.a
