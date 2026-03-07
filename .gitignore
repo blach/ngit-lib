@@ -24,3 +24,4 @@ xcuserdata/
 *.xcuserstate
 *.xcscmblueprint
 
+/openssl-*.tar.gz
